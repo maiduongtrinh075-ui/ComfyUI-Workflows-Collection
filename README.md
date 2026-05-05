@@ -155,9 +155,55 @@ archive.dat   → Archives/           (魔数检测为ZIP)
 4. **大文件**：超过100MB的文件跳过深度解析（可配置）
 5. **中断恢复**：Ctrl+C 中断后，下次继续扫描
 
+## 🔧 模型资源提取
+
+扫描工作流后，可提取所需的模型资源列表并获取下载链接：
+
+```bash
+python extract_model_resources.py
+```
+
+### 输出文件
+
+`model_resources.csv` - 包含以下字段：
+
+| 字段 | 说明 |
+|------|------|
+| type | 模型类型 (checkpoint/lora/vae/clip等) |
+| name | 模型名称 |
+| usage_count | 在工作流中的使用次数 |
+| download_url | Civitai API下载链接 |
+| page_url | Civitai 页面链接 |
+
+### 支持的模型类型
+
+- **checkpoint** - 主模型/底模
+- **lora** - LoRA 微调模型
+- **vae** - VAE 变分自编码器
+- **clip** - CLIP 文本编码器
+- **controlnet** - ControlNet 控制网络
+- **upscale_model** - 放大模型
+- **unet** - UNET 模型
+
+### 统计示例
+
+```
+找到 731 个唯一模型：
+  lora: 329 个
+  unet: 169 个
+  vae: 82 个
+  checkpoint: 62 个
+  clip: 51 个
+  upscale_model: 20 个
+  controlnet: 18 个
+
+找到下载链接: 709 个 (97%)
+```
+
 ## 🔗 参考资料
 
 - [Extracting ComfyUI Workflows from PNG Files](https://brendan.sanitylabs.com/extracting-comfyui-workflows-from-png-files)
 - [Reddit: How to extract workflow data from ComfyUI](https://www.reddit.com/r/StableDiffusion/comments/1axdhqk/how_to_extract_workflow_data_from_comfyui/)
 - [python-magic / filetype 库文档](https://github.com/h2non/filetype)
 - [FFmpeg FFprobe 文档](https://ffmpeg.org/ffprobe.html)
+- [Civitai API 文档](https://civitai.com/api/v1/models)

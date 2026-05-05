@@ -3,6 +3,7 @@ Extracted_ComfyUI_Assets/
 scanned_history.json
 workflow_mapping.json
 scan_output.log
+model_resources_updated.csv
 
 # Python
 .venv/
