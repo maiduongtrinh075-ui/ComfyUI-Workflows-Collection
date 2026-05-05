@@ -1,0 +1,10 @@
+# 核心依赖
+Pillow>=9.0.0
+
+# 可选依赖（用于更准确的文件类型检测）
+filetype>=1.0.0
+
+# 可选依赖（用于视频元数据提取）
+# ffmpeg/ffprobe 需单独安装，不在pip中
+# Windows下载: https://ffmpeg.org/download.html
+# 安装后确保 ffprobe 在系统PATH中

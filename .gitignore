@@ -1,0 +1,11 @@
+# 排除提取的文件
+Extracted_ComfyUI_Assets/
+scanned_history.json
+workflow_mapping.json
+scan_output.log
+
+# Python
+.venv/
+__pycache__/
+.idea/
+*.pyc
