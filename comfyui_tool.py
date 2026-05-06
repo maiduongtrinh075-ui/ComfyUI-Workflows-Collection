@@ -23,7 +23,10 @@ def main():
   python comfyui_tool.py --dedup          去重已提取的文件
   python comfyui_tool.py --stats          统计工作流分析报告
   python comfyui_tool.py --missing        检测缺失模型
-  python comfyui_tool.py --all            执行全部流程
+  python comfyui_tool.py --web            启动Web可视化界面
+  python comfyui_tool.py --database       导入数据到SQLite数据库
+  python comfyui_tool.py --export         导出HTML/CSV报告
+  python comfyui_tool.py --all            执行全部流程(不含Web)
         '''
     )
 
@@ -33,13 +36,16 @@ def main():
     parser.add_argument('--dedup', action='store_true', help='去重已提取的文件')
     parser.add_argument('--stats', action='store_true', help='生成工作流统计分析报告')
     parser.add_argument('--missing', action='store_true', help='检测缺失的模型')
-    parser.add_argument('--all', action='store_true', help='执行全部流程')
+    parser.add_argument('--web', action='store_true', help='启动Web可视化界面')
+    parser.add_argument('--database', action='store_true', help='导入数据到SQLite数据库')
+    parser.add_argument('--export', action='store_true', help='导出HTML/CSV报告')
+    parser.add_argument('--all', action='store_true', help='执行全部流程(不含Web)')
     parser.add_argument('--proxy', type=str, default='http://127.0.0.1:7890', help='代理地址 (默认: 7890端口)')
     parser.add_argument('--output', type=str, default='F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets', help='输出目录')
 
     args = parser.parse_args()
 
-    if not any([args.scan, args.models, args.media, args.dedup, args.stats, args.missing, args.all]):
+    if not any([args.scan, args.models, args.media, args.dedup, args.stats, args.missing, args.web, args.database, args.export, args.all]):
         parser.print_help()
         return
 
@@ -71,6 +77,18 @@ def main():
     if args.missing or args.all:
         print("\n[6] 检测缺失模型...")
         run_missing()
+
+    if args.web:
+        print("\n[7] 启动Web可视化界面...")
+        run_web()
+
+    if args.database or args.all:
+        print("\n[8] 导入数据库...")
+        run_database()
+
+    if args.export or args.all:
+        print("\n[9] 导出报告...")
+        run_export()
 
     print("\n" + "=" * 60)
     print("全部完成!")
@@ -125,6 +143,31 @@ def run_missing():
     result = subprocess.run([sys.executable, 'missing_model_detector.py'], cwd='F:/ComfyuiCatchJson')
     if result.returncode != 0:
         print("缺失模型检测失败")
+
+
+def run_web():
+    """启动Web可视化界面"""
+    print("启动Web服务器...")
+    print("地址: http://localhost:8080")
+    print("按 Ctrl+C 停止服务器")
+    import subprocess
+    subprocess.run([sys.executable, 'web_visualizer.py'], cwd='F:/ComfyuiCatchJson')
+
+
+def run_database():
+    """导入数据库"""
+    import subprocess
+    result = subprocess.run([sys.executable, 'database_manager.py'], cwd='F:/ComfyuiCatchJson')
+    if result.returncode != 0:
+        print("数据库导入失败")
+
+
+def run_export():
+    """导出报告"""
+    import subprocess
+    result = subprocess.run([sys.executable, 'export_reports.py'], cwd='F:/ComfyuiCatchJson')
+    if result.returncode != 0:
+        print("报告导出失败")
 
 
 if __name__ == "__main__":

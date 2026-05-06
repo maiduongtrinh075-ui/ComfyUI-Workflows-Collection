@@ -325,12 +325,119 @@ python comfyui_tool.py --all
 | --dedup | 去重已提取的文件 |
 | --stats | 生成统计分析报告 |
 | --missing | 检测缺失模型 |
-| --all | 执行全部流程 |
+| --web | 启动Web可视化界面 |
+| --database | 导入数据到SQLite数据库 |
+| --export | 导出HTML/CSV报告 |
+| --all | 执行全部流程(不含Web) |
 
 ### 单独执行
 
 ```bash
 python comfyui_tool.py --stats      # 只生成统计报告
 python comfyui_tool.py --missing    # 只检测缺失模型
+python comfyui_tool.py --web        # 启动Web界面
 python comfyui_tool.py --stats --missing  # 同时执行多个
 ```
+
+## 🌐 Web可视化界面
+
+启动Web界面查看和搜索工作流：
+
+```bash
+python web_visualizer.py
+# 或
+python comfyui_tool.py --web
+```
+
+### 功能特性
+
+- 查看所有工作流列表
+- 搜索节点类型/模型名称
+- 查看统计报告
+- 查看缺失模型报告
+- API接口支持自定义查询
+
+### 访问地址
+
+```
+http://localhost:8080
+```
+
+### API接口
+
+| 接口 | 说明 |
+|-----|------|
+| `/api/workflows` | 获取工作流列表 |
+| `/api/search?q=KSampler&type=node` | 搜索节点/模型 |
+| `/api/models` | 获取模型资源列表 |
+| `/api/media_mapping` | 获取媒体映射表 |
+| `/api/workflow_detail?file=xxx.json` | 获取工作流详情 |
+
+## 💾 SQLite数据库存储
+
+将工作流数据导入SQLite数据库，便于查询和分析：
+
+```bash
+python database_manager.py
+# 或
+python comfyui_tool.py --database
+```
+
+### 数据库表结构
+
+| 表名 | 说明 |
+|-----|------|
+| workflows | 工作流文件列表 |
+| nodes | 节点引用记录 |
+| model_references | 模型引用记录 |
+| model_resources | 模型资源列表 |
+| media_mappings | 媒体映射表 |
+| statistics | 统计信息汇总 |
+
+### 数据库文件
+
+```
+comfyui_workflows.db
+```
+
+### 查询示例
+
+```sql
+-- 查询复杂工作流
+SELECT * FROM workflows WHERE node_count > 50;
+
+-- 查询热门节点
+SELECT node_type, COUNT(*) FROM nodes GROUP BY node_type ORDER BY COUNT(*) DESC LIMIT 10;
+
+-- 查询模型引用
+SELECT model_type, model_name, COUNT(*) FROM model_references GROUP BY model_name ORDER BY COUNT(*) DESC;
+```
+
+## 📊 报告导出
+
+导出综合HTML报告和Excel兼容的CSV报告：
+
+```bash
+python export_reports.py
+# 或
+python comfyui_tool.py --export
+```
+
+### 输出报告
+
+| 文件 | 说明 |
+|-----|------|
+| comprehensive_report.html | 综合分析HTML报告 |
+| report_workflows.csv | 工作流列表 |
+| report_nodes.csv | 节点统计 |
+| report_models.csv | 模型引用统计 |
+| report_media_mapping.csv | 媒体映射表 |
+
+### 报告内容
+
+- 总体统计（工作流数、节点数、模型引用数）
+- 热门节点排行 (Top 50)
+- 热门模型排行 (Top 50)
+- 模型类型分布
+- 工作流复杂度分布
+- 最近添加的工作流
