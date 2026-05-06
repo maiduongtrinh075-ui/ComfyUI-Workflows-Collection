@@ -257,3 +257,80 @@ Extracted_ComfyUI_Assets/
 - [python-magic / filetype 库文档](https://github.com/h2non/filetype)
 - [FFmpeg FFprobe 文档](https://ffmpeg.org/ffprobe.html)
 - [Civitai API 文档](https://civitai.com/api/v1/models)
+
+## 🔍 缺失模型检测
+
+对比工作流引用的模型与本地ComfyUI模型目录，找出缺失的模型：
+
+```bash
+python missing_model_detector.py
+```
+
+### 功能特性
+
+- 扫描工作流JSON中引用的所有模型
+- 扫描本地ComfyUI models目录（checkpoints, loras, vae等）
+- 对比找出缺失的模型列表
+- 生成HTML和CSV报告
+
+### 配置本地模型目录
+
+编辑脚本中的 `LOCAL_MODEL_BASE` 为你的实际ComfyUI模型路径：
+
+```python
+LOCAL_MODEL_BASE = Path("F:/ComfyUI/models")  # 修改为实际路径
+```
+
+### 模型目录映射
+
+| 模型类型 | ComfyUI子目录 |
+|---------|--------------|
+| checkpoint | models/checkpoints/ |
+| lora | models/loras/ |
+| vae | models/vae/ |
+| clip | models/clip/ |
+| controlnet | models/controlnet/ |
+| upscale_model | models/upscale_models/ |
+| unet | models/unet/ |
+
+### 输出文件
+
+- `missing_models_report.html` - HTML可视化报告
+- `missing_models.csv` - CSV格式缺失模型列表
+
+### 统计示例
+
+```
+工作流引用模型: 731 个
+本地已有模型: 245 个
+缺失模型: 486 个 (66.5%)
+已有模型: 245 个 (33.5%)
+```
+
+## 🛠️ 统一CLI工具
+
+所有功能整合到一个CLI工具，方便批量执行：
+
+```bash
+python comfyui_tool.py --all
+```
+
+### 可用命令
+
+| 参数 | 功能 |
+|-----|------|
+| --scan | 扫描微信/QQ缓存提取工作流 |
+| --models | 提取模型资源列表 |
+| --media | 从媒体文件提取工作流JSON |
+| --dedup | 去重已提取的文件 |
+| --stats | 生成统计分析报告 |
+| --missing | 检测缺失模型 |
+| --all | 执行全部流程 |
+
+### 单独执行
+
+```bash
+python comfyui_tool.py --stats      # 只生成统计报告
+python comfyui_tool.py --missing    # 只检测缺失模型
+python comfyui_tool.py --stats --missing  # 同时执行多个
+```
