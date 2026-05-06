@@ -4,9 +4,16 @@ scanned_history.json
 workflow_mapping.json
 scan_output.log
 model_resources_updated.csv
+media_workflow_mapping.json
+extracted_workflow_*.json
+extracted_prompt_*.json
+temp_workflow.json
 
 # Python
 .venv/
 __pycache__/
 .idea/
 *.pyc
+
+# 临时脚本
+extract_workflow.py

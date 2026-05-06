@@ -200,6 +200,56 @@ python extract_model_resources.py
 找到下载链接: 709 个 (97%)
 ```
 
+## 📸 媒体工作流提取
+
+从已提取的图片/视频文件中导出工作流JSON，方便一一对应查找：
+
+```bash
+python extract_media_workflows.py
+```
+
+### 功能特性
+
+- 从 PNG 图片提取嵌入的工作流（tEXt/iTXt 元数据）
+- 从 MP4/WebM 视频提取工作流（FFprobe 元数据）
+- **SHA256 哈希去重**：相同工作流只保存一份JSON
+- 生成映射表，记录媒体文件与JSON的一一对应关系
+
+### 输出目录结构
+
+```
+Extracted_ComfyUI_Assets/
+├── Workflows_Media/           # 原始媒体文件 (344个)
+├── Workflows_JSON_From_Media/ # 提取的工作流JSON (87个唯一)
+└── media_workflow_mapping.json # 媒体与JSON对应关系
+```
+
+### 映射表格式
+
+```json
+{
+  "mappings": [
+    {
+      "media_file": "xxx.mp4",
+      "workflow_json": "xxx_workflow.json",
+      "workflow_hash": "abc123",
+      "is_duplicate": false
+    }
+  ]
+}
+```
+
+- `is_duplicate: false` → 有自己的唯一JSON文件
+- `is_duplicate: true` → 指向已有的JSON（重复工作流）
+
+### 统计示例
+
+```
+媒体文件总数: 344 个 (255 图片 + 89 视频)
+唯一工作流: 87 个
+重复工作流: 257 个
+```
+
 ## 🔗 参考资料
 
 - [Extracting ComfyUI Workflows from PNG Files](https://brendan.sanitylabs.com/extracting-comfyui-workflows-from-png-files)
