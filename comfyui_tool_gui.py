@@ -156,9 +156,12 @@ class ComfyUIToolGUI:
         self.btn_web = ttk.Button(btn_row2, text="🌐 Web界面", command=self.run_web, width=15)
         self.btn_web.pack(side=tk.LEFT, padx=5)
 
-        # 第三行 - 全部执行
+        # 第三行 - 下载和全部执行
         btn_row3 = ttk.Frame(func_frame)
         btn_row3.pack(fill=tk.X, pady=3)
+
+        self.btn_download = ttk.Button(btn_row3, text="⬇️ 下载缺失模型", command=self.run_download, width=15)
+        self.btn_download.pack(side=tk.LEFT, padx=5)
 
         self.btn_all = ttk.Button(btn_row3, text="⚡ 全部执行", command=self.run_all, width=20)
         self.btn_all.pack(side=tk.LEFT, padx=5)
@@ -398,13 +401,13 @@ class ComfyUIToolGUI:
             self.btn_stop.config(state=tk.NORMAL)
             self.status_label.config(text="状态: 运行中...")
             for btn in [self.btn_scan, self.btn_models, self.btn_media, self.btn_stats,
-                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all]:
+                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download]:
                 btn.config(state=tk.DISABLED)
         else:
             self.btn_stop.config(state=tk.DISABLED)
             self.status_label.config(text="状态: 完成")
             for btn in [self.btn_scan, self.btn_models, self.btn_media, self.btn_stats,
-                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all]:
+                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download]:
                 btn.config(state=tk.NORMAL)
 
     def stop_task(self):
@@ -543,6 +546,94 @@ class ComfyUIToolGUI:
     def run_export(self):
         """导出报告"""
         self.run_script("export_reports.py")
+
+    def run_download(self):
+        """下载缺失模型"""
+        # 检查缺失模型报告是否存在
+        missing_csv = Path(self.output_dir) / "missing_models.csv"
+        if not missing_csv.exists():
+            messagebox.showwarning("缺失模型报告不存在", "请先运行'缺失模型检测'")
+            return
+
+        # 弹出对话框选择下载数量
+        download_count = messagebox.askquestion(
+            "下载缺失模型",
+            "将自动下载缺失的模型到ComfyUI models目录\n"
+            "需要配置代理访问Civitai\n\n"
+            "是否开始下载？（将下载前5个缺失模型）"
+        )
+
+        if download_count != 'yes':
+            return
+
+        self.log("开始下载缺失模型...", 'info')
+
+        def run():
+            try:
+                # 调用下载脚本
+                import requests
+
+                # 读取缺失模型列表
+                import csv
+                missing_models = []
+                with open(missing_csv, 'r', encoding='utf-8-sig') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        missing_models.append({
+                            'type': row['模型类型'],
+                            'name': row['模型名称'],
+                        })
+
+                self.log(f"缺失模型总数: {len(missing_models)}", 'info')
+
+                # 尝试下载前5个
+                downloaded = 0
+                for i, model in enumerate(missing_models[:20]):
+                    if downloaded >= 5:
+                        break
+
+                    self.log(f"[{i+1}] 搜索: {model['name']} ({model['type']})", 'info')
+
+                    # 搜索模型
+                    from model_downloader import search_civitai_model, download_model, MODEL_DIR_MAP
+
+                    proxy = self.proxy_entry.get()
+                    result = search_civitai_model(model['name'], model['type'], proxy)
+
+                    if result:
+                        self.log(f"  ✓ 找到: {result['model_name']} ({result['file_size']/1024/1024:.1f}MB)", 'success')
+
+                        # 设置下载目录
+                        comfyui_dir = Path("F:/ComfyUI/models")
+                        if comfyui_dir.exists():
+                            target_dir = comfyui_dir / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
+                        else:
+                            target_dir = Path(self.output_dir) / "downloaded_models" / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
+
+                        target_dir.mkdir(parents=True, exist_ok=True)
+                        target_path = target_dir / result['file_name']
+
+                        self.log(f"  下载到: {target_path}", 'info')
+
+                        # 下载
+                        if download_model(result['download_url'], target_path, proxy, result['file_size']):
+                            self.log(f"  ✓ 下载完成!", 'success')
+                            downloaded += 1
+                        else:
+                            self.log(f"  ✗ 下载失败", 'error')
+                    else:
+                        self.log(f"  ✗ 未找到", 'warning')
+
+                self.log(f"\n下载完成: {downloaded} 个模型", 'success')
+
+            except Exception as e:
+                self.log(f"下载错误: {e}", 'error')
+
+            finally:
+                self.set_running(False)
+
+        self.set_running(True)
+        threading.Thread(target=run, daemon=True).start()
 
     def run_web(self):
         """启动Web界面"""

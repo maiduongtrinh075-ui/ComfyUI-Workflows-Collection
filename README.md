@@ -155,6 +155,58 @@ archive.dat   → Archives/           (魔数检测为ZIP)
 4. **大文件**：超过100MB的文件跳过深度解析（可配置）
 5. **中断恢复**：Ctrl+C 中断后，下次继续扫描
 
+## ⬇️ 模型下载功能
+
+自动从Civitai下载缺失的模型文件：
+
+### 使用方法
+
+```bash
+# 测试下载一个模型
+python model_downloader.py --test
+
+# 下载指定模型
+python model_downloader.py --model "juggernaut" --type "checkpoint"
+
+# 批量下载缺失模型（默认5个）
+python model_downloader.py --batch 10
+```
+
+### GUI下载
+
+在桌面工具中点击"⬇️ 下载缺失模型"按钮，自动下载前5个缺失模型。
+
+### 功能特性
+
+| 特性 | 说明 |
+|-----|------|
+| Civitai搜索 | 自动搜索模型并获取下载链接 |
+| 进度显示 | 实时显示下载进度和速度 |
+| 断点续传 | 支持中断后继续下载 |
+| 自动分类 | 按模型类型放到对应目录 |
+
+### 模型存放目录
+
+下载的模型自动放到ComfyUI对应目录：
+
+```
+ComfyUI/models/
+├── checkpoints/    ← checkpoint模型
+├── loras/          ← LoRA模型
+├── vae/            ← VAE模型
+├── clip/           ← CLIP模型
+├── controlnet/     ← ControlNet模型
+└── upscale_models/ ← 放大模型
+```
+
+### 代理配置
+
+下载需要访问Civitai，请确保代理配置正确：
+
+```python
+PROXY = "http://127.0.0.1:7890"  # 修改为你的代理地址
+```
+
 ## 🔧 模型资源提取
 
 扫描工作流后，可提取所需的模型资源列表并获取下载链接：
