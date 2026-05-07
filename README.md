@@ -207,6 +207,51 @@ ComfyUI/models/
 PROXY = "http://127.0.0.1:7890"  # 修改为你的代理地址
 ```
 
+## 🎯 工作流模型下载
+
+针对单个工作流，下载其所需的所有缺失模型：
+
+### 使用方法
+
+```bash
+# 列出工作流引用的模型（不下载）
+python workflow_model_downloader.py workflow.json --list
+
+# 下载工作流缺失的所有模型
+python workflow_model_downloader.py workflow.json
+
+# 指定模型目录和代理
+python workflow_model_downloader.py workflow.json --models-dir "F:/ComfyUI/models" --proxy "http://127.0.0.1:7890"
+
+# 交互式选择工作流
+python workflow_model_downloader.py
+```
+
+### 功能流程
+
+```
+1. 解析工作流JSON → 提取所有模型引用
+2. 扫描本地ComfyUI → 检测已有模型
+3. 对比生成缺失列表 → 显示缺失模型
+4. 自动搜索Civitai → 下载缺失模型
+```
+
+### 输出示例
+
+```
+工作流: flux_workflow.json
+
+工作流引用模型: 5 个
+  checkpoint: 1 个 (flux-2-klein-9b-fp8.safetensors)
+  vae: 1 个 (flux2-vae.safetensors)
+  clip: 3 个 (flux2, default, qwen_3_8b_fp8mixed.safetensors)
+
+缺失模型: 5 个
+已有模型: 0 个
+
+开始下载缺失模型...
+```
+
 ## 🔧 模型资源提取
 
 扫描工作流后，可提取所需的模型资源列表并获取下载链接：

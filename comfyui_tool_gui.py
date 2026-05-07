@@ -163,6 +163,9 @@ class ComfyUIToolGUI:
         self.btn_download = ttk.Button(btn_row3, text="⬇️ 下载缺失模型", command=self.run_download, width=15)
         self.btn_download.pack(side=tk.LEFT, padx=5)
 
+        self.btn_workflow_download = ttk.Button(btn_row3, text="🎯 工作流模型下载", command=self.run_workflow_download, width=15)
+        self.btn_workflow_download.pack(side=tk.LEFT, padx=5)
+
         self.btn_all = ttk.Button(btn_row3, text="⚡ 全部执行", command=self.run_all, width=20)
         self.btn_all.pack(side=tk.LEFT, padx=5)
 
@@ -401,13 +404,13 @@ class ComfyUIToolGUI:
             self.btn_stop.config(state=tk.NORMAL)
             self.status_label.config(text="状态: 运行中...")
             for btn in [self.btn_scan, self.btn_models, self.btn_media, self.btn_stats,
-                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download]:
+                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download, self.btn_workflow_download]:
                 btn.config(state=tk.DISABLED)
         else:
             self.btn_stop.config(state=tk.DISABLED)
             self.status_label.config(text="状态: 完成")
             for btn in [self.btn_scan, self.btn_models, self.btn_media, self.btn_stats,
-                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download]:
+                        self.btn_missing, self.btn_database, self.btn_export, self.btn_web, self.btn_all, self.btn_download, self.btn_workflow_download]:
                 btn.config(state=tk.NORMAL)
 
     def stop_task(self):
@@ -628,6 +631,93 @@ class ComfyUIToolGUI:
 
             except Exception as e:
                 self.log(f"下载错误: {e}", 'error')
+
+            finally:
+                self.set_running(False)
+
+        self.set_running(True)
+        threading.Thread(target=run, daemon=True).start()
+
+    def run_workflow_download(self):
+        """下载指定工作流的所有缺失模型"""
+        # 选择工作流文件
+        workflow_path = filedialog.askopenfilename(
+            title="选择工作流JSON文件",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+            initialdir=self.output_dir
+        )
+
+        if not workflow_path:
+            return
+
+        self.log(f"选择工作流: {Path(workflow_path).name}", 'info')
+
+        def run():
+            try:
+                from workflow_model_downloader import parse_workflow_models, scan_local_models, check_missing_models, search_and_download_model, MODEL_DIR_MAP
+
+                workflow_path_obj = Path(workflow_path)
+                proxy = self.proxy_entry.get()
+
+                # 解析工作流模型
+                self.log("\n[1] 解析工作流模型...", 'info')
+                workflow_models = parse_workflow_models(workflow_path_obj)
+
+                total = sum(len(v) for v in workflow_models.values())
+                self.log(f"  工作流引用模型: {total} 个", 'info')
+
+                for model_type, model_list in workflow_models.items():
+                    if model_list:
+                        self.log(f"  {model_type}: {len(model_list)} 个", 'info')
+
+                # 扫描本地模型
+                self.log("\n[2] 扫描本地模型...", 'info')
+                comfyui_dir = Path("F:/ComfyUI/models")
+                local_models = scan_local_models(comfyui_dir) if comfyui_dir.exists() else {}
+
+                # 检查缺失
+                self.log("\n[3] 检查缺失模型...", 'info')
+                missing, found = check_missing_models(workflow_models, local_models)
+
+                total_missing = sum(len(v) for v in missing.values())
+                total_found = sum(len(v) for v in found.values())
+
+                self.log(f"  缺失: {total_missing} 个", 'warning')
+                self.log(f"  已有: {total_found} 个", 'success')
+
+                if total_missing == 0:
+                    self.log("\n✓ 所有模型都已存在!", 'success')
+                    return
+
+                # 显示缺失列表
+                self.log("\n缺失模型:", 'info')
+                for model_type, model_list in missing.items():
+                    for model in model_list:
+                        self.log(f"  ✗ {model} ({model_type})", 'warning')
+
+                # 下载缺失模型
+                self.log("\n[4] 开始下载...", 'info')
+
+                downloaded = 0
+                failed = 0
+
+                for model_type, model_list in missing.items():
+                    if model_list:
+                        target_dir = comfyui_dir / MODEL_DIR_MAP.get(model_type, model_type) if comfyui_dir.exists() else Path(self.output_dir) / "downloaded_models" / MODEL_DIR_MAP.get(model_type, model_type)
+                        target_dir.mkdir(parents=True, exist_ok=True)
+
+                        for model_name in model_list:
+                            self.log(f"\n下载 {model_name}...", 'info')
+                            if search_and_download_model(model_name, model_type, target_dir, proxy):
+                                downloaded += 1
+                                self.progress_var.set((downloaded / total_missing) * 100)
+                            else:
+                                failed += 1
+
+                self.log(f"\n下载完成: 成功 {downloaded}, 失败 {failed}", 'success')
+
+            except Exception as e:
+                self.log(f"错误: {e}", 'error')
 
             finally:
                 self.set_running(False)
