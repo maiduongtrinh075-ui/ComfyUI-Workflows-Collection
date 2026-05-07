@@ -524,3 +524,57 @@ python build_exe.py
 4. **执行任务**：点击功能按钮或"全部执行"
 5. **查看结果**：点击"打开输出目录"查看提取的文件
 6. **查看报告**：打开HTML报告查看分析结果
+
+## 📦 版本发布
+
+使用GitHub Actions自动构建Windows/Mac版本并发布到Releases。
+
+### 发布新版本
+
+```bash
+# 确保所有更改已提交并推送
+git status
+git push
+
+# 运行发布脚本
+python release.py
+```
+
+脚本会自动：
+1. 创建新版本tag（如 v1.0 → v1.1）
+2. 推送tag到GitHub
+3. 触发GitHub Actions自动构建
+4. 发布Windows/Mac可执行文件
+
+### 下载地址
+
+发布后可在GitHub Releases页面下载：
+```
+https://github.com/maiduongtrinh075-ui/ComfyUI-Workflows-Collection/releases
+```
+
+- **Windows**: `ComfyUI-Tool.exe`（双击运行）
+- **macOS**: `ComfyUI-Tool`（首次运行可能需要授权）
+
+### 手动发布
+
+```bash
+# 创建tag
+git tag -a v1.0 -m "Release 1.0"
+
+# 推送tag触发构建
+git push origin v1.0
+
+# 删除tag（如需修改）
+git tag -d v1.0
+git push origin --delete v1.0
+```
+
+### 构建进度
+
+查看GitHub Actions构建状态：
+```
+https://github.com/maiduongtrinh075-ui/ComfyUI-Workflows-Collection/actions
+```
+
+构建约需5-10分钟，完成后会自动发布到Releases页面。

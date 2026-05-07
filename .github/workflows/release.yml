@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送v开头的tag时触发，如 v1.0, v1.1
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pillow
+
+      - name: Build Windows exe
+        run: |
+          pyinstaller --name "ComfyUI-Tool" --onefile --windowed --clean --noconfirm comfyui_tool_gui.py
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/ComfyUI-Tool.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pillow
+
+      - name: Build macOS app
+        run: |
+          pyinstaller --name "ComfyUI-Tool" --onefile --windowed --clean --noconfirm comfyui_tool_gui.py
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/ComfyUI-Tool
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: ./release
+
+      - name: Download macOS build
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+          path: ./release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/ComfyUI-Tool.exe
+            release/ComfyUI-Tool
+          body: |
+            ## ComfyUI 工作流工具
+
+            ### 功能特性
+            - 🔍 扫描微信/QQ缓存提取工作流
+            - 📦 提取模型资源列表（带Civitai下载链接）
+            - 📸 从图片/视频提取嵌入的工作流
+            - 📊 统计分析报告
+            - ⚠️ 缺失模型检测
+            - 💾 SQLite数据库存储
+            - 📋 HTML/CSV报告导出
+            - 🌐 Web可视化界面
+
+            ### 下载说明
+            - **Windows**: 下载 `ComfyUI-Tool.exe`，双击运行
+            - **macOS**: 下载 `ComfyUI-Tool`，首次运行可能需要授权
+
+            ### 使用方法
+            1. 添加扫描路径（微信/QQ缓存目录）
+            2. 设置输出目录
+            3. 点击"全部执行"或单独执行功能
+            4. 查看日志和统计信息
+
+            ### 详细文档
+            请查看 [README.md](https://github.com/maiduongtrinh075-ui/ComfyUI-Workflows-Collection/blob/master/README.md)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
