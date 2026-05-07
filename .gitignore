@@ -15,5 +15,14 @@ __pycache__/
 .idea/
 *.pyc
 
+# PyInstaller编译产物
+dist/
+build/
+*.spec
+*.exe
+
+# GUI配置
+gui_config.json
+
 # 临时脚本
 extract_workflow.py
