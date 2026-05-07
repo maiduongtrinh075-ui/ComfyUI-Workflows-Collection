@@ -3,7 +3,10 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'  # 当推送v开头的tag时触发，如 v1.0, v1.1
+      - 'v*'  # 当推送v开头的tag时触发
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -29,8 +32,9 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
+          name: ComfyUI-Tool-windows
           path: dist/ComfyUI-Tool.exe
+          retention-days: 1
 
   build-macos:
     runs-on: macos-latest
@@ -55,27 +59,30 @@ jobs:
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-build
+          name: ComfyUI-Tool-macos
           path: dist/ComfyUI-Tool
+          retention-days: 1
 
   release:
     needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Download Windows build
         uses: actions/download-artifact@v4
         with:
-          name: windows-build
+          name: ComfyUI-Tool-windows
           path: ./release
 
       - name: Download macOS build
         uses: actions/download-artifact@v4
         with:
-          name: macos-build
+          name: ComfyUI-Tool-macos
           path: ./release
+
+      - name: List files
+        run: ls -la ./release
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -84,7 +91,7 @@ jobs:
             release/ComfyUI-Tool.exe
             release/ComfyUI-Tool
           body: |
-            ## ComfyUI 工作流工具
+            ## ComfyUI 工作流工具 v${{ github.ref_name }}
 
             ### 功能特性
             - 🔍 扫描微信/QQ缓存提取工作流
@@ -98,7 +105,11 @@ jobs:
 
             ### 下载说明
             - **Windows**: 下载 `ComfyUI-Tool.exe`，双击运行
-            - **macOS**: 下载 `ComfyUI-Tool`，首次运行可能需要授权
+            - **macOS**: 下载 `ComfyUI-Tool`，首次运行需要授权:
+              ```bash
+              chmod +x ComfyUI-Tool
+              ./ComfyUI-Tool
+              ```
 
             ### 使用方法
             1. 添加扫描路径（微信/QQ缓存目录）
@@ -107,7 +118,7 @@ jobs:
             4. 查看日志和统计信息
 
             ### 详细文档
-            请查看 [README.md](https://github.com/maiduongtrinh075-ui/ComfyUI-Workflows-Collection/blob/master/README.md)
+            请查看 [README.md](https://github.com/${{ github.repository }}/blob/master/README.md)
           draft: false
           prerelease: false
         env:
