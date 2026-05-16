@@ -361,6 +361,80 @@ Extracted_ComfyUI_Assets/
 - [FFmpeg FFprobe 文档](https://ffmpeg.org/ffprobe.html)
 - [Civitai API 文档](https://civitai.com/api/v1/models)
 
+## 💬 QQ聊天记录导出 (QCE)
+
+整合了 NapCat + QQ Chat Exporter (QCE) 工具，可以正规导出 QQ 聊天记录。
+
+### 启动 QCE
+
+```bash
+# 方式1: 简单启动脚本
+python start_qce.py
+
+# 方式2: 统一CLI工具
+python comfyui_tool.py --qce
+```
+
+启动后：
+1. 等待 QQ 自动启动并登录
+2. 浏览器访问 `http://localhost:6099/qce-v4-tool`
+3. 在 Web UI 中导出聊天记录
+
+### 交互式导出
+
+```bash
+# 交互式选择聊天导出
+python qce_api.py --export
+
+# 或使用统一工具
+python comfyui_tool.py --qce-export
+```
+
+### API 调用
+
+```bash
+# 测试连接
+python qce_api.py --test
+
+# 列出所有聊天
+python qce_api.py --list
+
+# 只列出群聊
+python qce_api.py --groups
+
+# 只列出好友
+python qce_api.py --friends
+
+# 获取状态
+python qce_api.py --status
+```
+
+### 导出格式
+
+支持多种导出格式：
+- **JSON** - 结构化数据，适合程序处理
+- **Excel** - 表格格式，方便查看
+- **HTML** - 可视化网页格式
+- **Text** - 纯文本格式
+
+### Token 获取
+
+按 `Win + R`，输入 `%USERPROFILE%\.qq-chat-exporter` 查看 `security.json` 文件中的 `accessToken`。
+
+### 与缓存扫描的区别
+
+| 方式 | 说明 |
+|-----|------|
+| 缓存扫描 (`--scan`) | 直接扫描 QQ 缓存目录，快速提取工作流文件 |
+| QCE 导出 (`--qce`) | 正规导出完整聊天记录，包含更多上下文信息 |
+
+建议：先用 QCE 导出重要聊天，再用缓存扫描提取工作流文件。
+
+### 相关链接
+
+- [NapCat 官方文档](https://napneko.github.io/)
+- [QQ Chat Exporter](https://github.com/shuakami/qq-chat-exporter)
+
 ## 🔍 缺失模型检测
 
 对比工作流引用的模型与本地ComfyUI模型目录，找出缺失的模型：
@@ -431,7 +505,9 @@ python comfyui_tool.py --all
 | --web | 启动Web可视化界面 |
 | --database | 导入数据到SQLite数据库 |
 | --export | 导出HTML/CSV报告 |
-| --all | 执行全部流程(不含Web) |
+| --qce | 启动QCE (QQ聊天导出工具) |
+| --qce-export | 交互式导出QQ聊天记录 |
+| --all | 执行全部流程(不含Web和QCE) |
 
 ### 单独执行
 
@@ -439,6 +515,8 @@ python comfyui_tool.py --all
 python comfyui_tool.py --stats      # 只生成统计报告
 python comfyui_tool.py --missing    # 只检测缺失模型
 python comfyui_tool.py --web        # 启动Web界面
+python comfyui_tool.py --qce        # 启动QCE
+python comfyui_tool.py --qce-export # 导出QQ聊天记录
 python comfyui_tool.py --stats --missing  # 同时执行多个
 ```
 

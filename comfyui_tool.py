@@ -40,12 +40,14 @@ def main():
     parser.add_argument('--database', action='store_true', help='导入数据到SQLite数据库')
     parser.add_argument('--export', action='store_true', help='导出HTML/CSV报告')
     parser.add_argument('--all', action='store_true', help='执行全部流程(不含Web)')
+    parser.add_argument('--qce', action='store_true', help='启动QCE (QQ聊天导出工具)')
+    parser.add_argument('--qce-export', action='store_true', help='交互式导出QQ聊天记录')
     parser.add_argument('--proxy', type=str, default='http://127.0.0.1:7890', help='代理地址 (默认: 7890端口)')
     parser.add_argument('--output', type=str, default='F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets', help='输出目录')
 
     args = parser.parse_args()
 
-    if not any([args.scan, args.models, args.media, args.dedup, args.stats, args.missing, args.web, args.database, args.export, args.all]):
+    if not any([args.scan, args.models, args.media, args.dedup, args.stats, args.missing, args.web, args.database, args.export, args.all, args.qce, args.qce_export]):
         parser.print_help()
         return
 
@@ -89,6 +91,14 @@ def main():
     if args.export or args.all:
         print("\n[9] 导出报告...")
         run_export()
+
+    if args.qce:
+        print("\n[10] 启动 QCE...")
+        run_qce()
+
+    if args.qce_export:
+        print("\n[11] 导出 QQ 聊天记录...")
+        run_qce_export()
 
     print("\n" + "=" * 60)
     print("全部完成!")
@@ -168,6 +178,18 @@ def run_export():
     result = subprocess.run([sys.executable, 'export_reports.py'], cwd='F:/ComfyuiCatchJson')
     if result.returncode != 0:
         print("报告导出失败")
+
+
+def run_qce():
+    """启动 QCE"""
+    import subprocess
+    subprocess.run([sys.executable, 'start_qce.py'], cwd='F:/ComfyuiCatchJson')
+
+
+def run_qce_export():
+    """交互式导出 QQ 聊天记录"""
+    import subprocess
+    subprocess.run([sys.executable, 'qce_api.py', '--export'], cwd='F:/ComfyuiCatchJson')
 
 
 if __name__ == "__main__":
