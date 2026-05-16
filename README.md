@@ -365,6 +365,29 @@ Extracted_ComfyUI_Assets/
 
 整合了 NapCat + QQ Chat Exporter (QCE) 工具，可以正规导出 QQ 聊天记录。
 
+### 安装 QCE
+
+QCE 工具需要单独下载安装：
+
+1. **下载 QCE Framework 包**
+   - 从 [QQ Chat Exporter Releases](https://github.com/shuakami/qq-chat-exporter/releases) 下载 `NapCat-Framework-QCE-vX.X.XX.zip`
+   - 或从 [NapCat 官方](https://napneko.github.io/) 获取最新版本
+
+2. **解压到项目目录**
+   ```
+   F:/ComfyuiCatchJson/
+   ├── qq-chat-exporter/    ← 解压到这里
+   │   ├── napiLoader.bat
+   │   ├── napimain.exe
+   │   └── plugins/
+   └── ...
+   ```
+
+3. **首次运行**
+   - 确保 QQ 已安装但未运行
+   - 运行 `python start_qce.py`
+   - QQ 会自动启动，登录后即可使用
+
 ### 启动 QCE
 
 ```bash
