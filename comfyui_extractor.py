@@ -18,7 +18,7 @@ import signal
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import Set, Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, Set
 from PIL import Image
 import uuid
 
@@ -33,6 +33,7 @@ SCAN_PATHS = [
     r"C:\Users\Swioon\Documents\Tencent Files",
     r"C:\Users\Swioon\Documents\WeChat Files",
     r"C:\Users\Swioon\Downloads",
+    r"F:\QQChatExport",
 ]
 
 # 压缩包扩展名
@@ -342,9 +343,9 @@ class ComfyUIExtractor:
             'detected_by_signature': 0,  # 通过魔数检测识别的文件
         }
 
-        # 已扫描文件记录
-        self.scanned_files: Set[str] = set()
-        self.scanned_hashes: Set[str] = set()
+        # 已扫描文件记录（路径 → 哈希映射，确保对应关系正确）
+        self.scanned_files: Dict[str, str] = {}  # 文件路径 -> SHA256哈希
+        self.output_hashes: Set[str] = set()  # 输出目录中已有的哈希（去重用）
 
         # 工作流映射记录（记录每个文件对应的工作流信息）
         self.workflow_records: list = []
@@ -392,7 +393,7 @@ class ComfyUIExtractor:
         self.cleanup_duplicates()
 
     def cleanup_duplicates(self):
-        """清理输出目录中已有的重复文件"""
+        """清理输出目录中已有的重复文件，并构建哈希集合"""
         logger.info("检查并清理重复文件...")
 
         hash_map = {}
@@ -426,6 +427,8 @@ class ComfyUIExtractor:
                                 hash_map[file_hash] = file_path
                         else:
                             hash_map[file_hash] = file_path
+                            # 添加到输出哈希集合
+                            self.output_hashes.add(file_hash)
                 except Exception as e:
                     logger.debug(f"处理文件失败: {file_path.name} - {e}")
 
@@ -433,6 +436,7 @@ class ComfyUIExtractor:
             logger.info(f"✓ 清理了 {duplicates_found} 个重复文件")
         else:
             logger.info("✓ 无重复文件需要清理")
+        logger.info(f"✓ 输出目录已有 {len(self.output_hashes)} 个唯一文件哈希")
 
     def load_history(self):
         """加载扫描历史记录"""
@@ -440,13 +444,23 @@ class ComfyUIExtractor:
             try:
                 with open(self.history_file, 'r', encoding='utf-8') as f:
                     history = json.load(f)
-                    self.scanned_files = set(history.get('files', []))
-                    self.scanned_hashes = set(history.get('hashes', []))
-                logger.info(f"✓ 已加载历史记录: {len(self.scanned_files)} 个文件路径, {len(self.scanned_hashes)} 个文件哈希")
+                    # 支持新旧两种格式
+                    if 'file_hashes' in history:
+                        # 新格式：字典 {路径: 哈希}
+                        self.scanned_files = history.get('file_hashes', {})
+                    else:
+                        # 旧格式：分离的files和hashes数组（合并为字典）
+                        files = history.get('files', [])
+                        hashes = history.get('hashes', [])
+                        # 尽量匹配，如果数量不一致则只保存路径
+                        if len(files) == len(hashes):
+                            self.scanned_files = {f: h for f, h in zip(files, hashes)}
+                        else:
+                            self.scanned_files = {f: '' for f in files}
+                logger.info(f"✓ 已加载历史记录: {len(self.scanned_files)} 个文件路径")
             except Exception as e:
                 logger.warning(f"⚠ 加载历史记录失败，将从头开始: {e}")
-                self.scanned_files = set()
-                self.scanned_hashes = set()
+                self.scanned_files = {}
         else:
             logger.info("ℹ 未找到历史记录文件，将从头开始扫描")
 
@@ -455,8 +469,7 @@ class ComfyUIExtractor:
         try:
             history = {
                 'last_scan': datetime.now().isoformat(),
-                'files': list(self.scanned_files),
-                'hashes': list(self.scanned_hashes),
+                'file_hashes': self.scanned_files,  # 新格式：字典 {路径: 哈希}
                 'stats': self.stats
             }
             with open(self.history_file, 'w', encoding='utf-8') as f:
@@ -793,22 +806,31 @@ class ComfyUIExtractor:
                             detected_ext: Optional[str] = None) -> bool:
         """
         复制文件到目标目录，保留时间戳，处理同名冲突
+        检查历史记录和输出目录哈希，防止重复复制
         """
         try:
             file_hash = self.calculate_file_hash(source)
-            if file_hash and file_hash in self.scanned_hashes:
-                logger.debug(f"跳过重复文件（哈希匹配）: {source.name}")
-                self.stats['skipped'] += 1
-                return False
+            # 检查哈希是否已存在（历史记录或输出目录）
+            if file_hash:
+                if file_hash in self.scanned_files.values():
+                    logger.debug(f"跳过重复文件（历史哈希匹配）: {source.name}")
+                    self.stats['skipped'] += 1
+                    return False
+                if file_hash in self.output_hashes:
+                    logger.debug(f"跳过重复文件（输出目录哈希匹配）: {source.name}")
+                    self.stats['skipped'] += 1
+                    return False
 
             target_filename = self.generate_unique_filename(target_dir, source.name, source, detected_ext)
             target_path = target_dir / target_filename
 
             shutil.copy2(source, target_path)
 
-            self.scanned_files.add(str(source.resolve()))
+            # 添加到字典：路径 → 哈希
+            self.scanned_files[str(source.resolve())] = file_hash or ''
+            # 同时添加到输出哈希集合
             if file_hash:
-                self.scanned_hashes.add(file_hash)
+                self.output_hashes.add(file_hash)
 
             logger.info(f"  ✓ 复制成功 [{category}]: {source.name} → {target_filename}")
             return True
@@ -825,6 +847,56 @@ class ComfyUIExtractor:
             logger.error(f"✗ 复制失败: {source} - {e}")
             self.stats['errors'] += 1
             return False
+
+    def copy_related_media_files(self, json_file: Path):
+        """
+        当发现JSON工作流时，复制同目录下的所有媒体资源文件
+        包括：PNG、WebP、MP4、WebM等所有媒体格式
+        """
+        source_dir = json_file.parent
+        json_name = json_file.stem  # 工作流名称（不含扩展名）
+        media_count = 0
+
+        # 搜索同目录下的所有媒体文件
+        for media_file in source_dir.iterdir():
+            if not media_file.is_file():
+                continue
+            if media_file == json_file:
+                continue
+
+            media_ext = media_file.suffix.lower()
+            # 只处理媒体文件（图片、视频）
+            if media_ext not in MEDIA_EXTENSIONS:
+                continue
+
+            # 检查是否已处理
+            media_path_str = str(media_file.resolve())
+            if media_path_str in self.scanned_files:
+                continue
+
+            # 复制媒体文件
+            if self.copy_file_with_dedup(media_file, self.workflows_media_dir, '关联媒体', None):
+                media_count += 1
+                self.stats['media_workflows'] += 1
+
+                # ★ 创建映射记录：媒体文件 → 关联的工作流JSON
+                record = {
+                    'source_path': media_path_str,
+                    'target_filename': media_file.name,
+                    'target_dir': 'Workflows_Media',
+                    'category': '关联媒体',
+                    'extraction_method': '关联复制',
+                    'file_extension': media_ext,
+                    'detected_type': None,
+                    'workflow_summary': {'node_count': 0, 'link_count': 0, 'node_types': []},
+                    'scan_time': datetime.now().isoformat(),
+                    'related_workflow': str(json_file.resolve()),  # 关联的JSON工作流路径
+                    'related_workflow_name': json_file.name,  # 关联的JSON工作流文件名
+                }
+                self.workflow_records.append(record)
+
+        if media_count > 0:
+            logger.info(f"  ✓ 关联复制 {media_count} 个媒体文件 → {json_file.name}")
 
     def process_file(self, file_path: Path):
         """
@@ -865,7 +937,6 @@ class ComfyUIExtractor:
                 if ext == JSON_EXTENSION:
                     target_dir = self.workflows_json_dir
                     category = 'JSON工作流'
-                    self.stats['json_workflows'] += 1
                 elif ext in MEDIA_EXTENSIONS:
                     target_dir = self.workflows_media_dir
                     category = f'媒体工作流({method})'
@@ -882,8 +953,13 @@ class ComfyUIExtractor:
                 target_filename = self.generate_unique_filename(target_dir, file_path.name, file_path, detected_type)
                 target_path = target_dir / target_filename
 
-                # 复制文件
+                # ★ JSON工作流：无论是否重复，都要复制同目录媒体文件
+                if ext == JSON_EXTENSION:
+                    self.copy_related_media_files(file_path)
+
+                # 复制JSON文件本身（可能因重复而跳过）
                 if self.copy_file_with_dedup(file_path, target_dir, category, detected_type):
+                    self.stats['json_workflows'] += 1  # 只有实际复制才计数
                     # 记录工作流映射信息
                     workflow_info = self.extract_workflow_summary(workflow)
                     record = {
@@ -1087,10 +1163,21 @@ def main():
                         help='要识别的文件路径（用于 identify 操作）')
     parser.add_argument('--name', '-n', type=str,
                         help='要查询的文件名（用于 query 操作）')
+    parser.add_argument('--output', '-o', type=str,
+                        help='自定义输出目录名称（不带路径，仅目录名）')
+    parser.add_argument('--incremental', '-i', type=str,
+                        help='增量扫描：指定旧输出目录路径，加载其历史记录只扫描新文件')
+    parser.add_argument('--date-output', '-d', action='store_true',
+                        help='输出目录名添加日期后缀（格式：_YYYYMMDD）')
 
     args = parser.parse_args()
 
-    output_base = Path.cwd() / OUTPUT_DIR_NAME
+    # 确定输出目录
+    base_output_name = args.output if args.output else OUTPUT_DIR_NAME
+    if args.date_output:
+        date_suffix = datetime.now().strftime('_%Y%m%d')
+        base_output_name = base_output_name + date_suffix
+    output_base = Path.cwd() / base_output_name
 
     if args.action == 'identify':
         # 识别指定文件的工作流
@@ -1106,6 +1193,39 @@ def main():
     else:
         # 默认：扫描模式
         extractor = ComfyUIExtractor(output_base)
+
+        # 增量扫描：从旧输出目录的实际文件计算哈希（不依赖可能错误的历史文件）
+        if args.incremental:
+            old_output_path = Path(args.incremental)
+            if not old_output_path.exists():
+                old_output_path = Path.cwd() / args.incremental
+
+            if old_output_path.exists() and old_output_path.is_dir():
+                # 直接从旧输出目录的文件计算正确哈希（可靠方式）
+                logger.info(f"✓ 增量模式：从 {old_output_path} 目录计算文件哈希...")
+                hash_count = 0
+                for subdir in [old_output_path / WORKFLOW_JSON_DIR,
+                               old_output_path / WORKFLOW_MEDIA_DIR,
+                               old_output_path / WORKFLOW_UNKNOWN_DIR,
+                               old_output_path / ARCHIVES_DIR]:
+                    if not subdir.exists():
+                        continue
+                    for file_path in subdir.rglob('*'):
+                        if not file_path.is_file():
+                            continue
+                        try:
+                            sha256_hash = hashlib.sha256()
+                            with open(file_path, 'rb') as f:
+                                for byte_block in iter(lambda: f.read(65536), b''):
+                                    sha256_hash.update(byte_block)
+                            file_hash = sha256_hash.hexdigest()
+                            if file_hash:
+                                extractor.output_hashes.add(file_hash)
+                                hash_count += 1
+                        except Exception:
+                            continue
+                logger.info(f"  已加载哈希: {hash_count} 个（从实际文件计算，用于内容去重）")
+
         try:
             extractor.run()
         except KeyboardInterrupt:
