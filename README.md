@@ -3,6 +3,26 @@
 自动扫描微信/腾讯软件缓存目录，提取 ComfyUI 工作流文件和压缩包。
 **增强版支持视频文件、未知后缀名文件、文件魔数检测！**
 
+## 📅 最近更新（2026-06-13）
+
+- ✅ **QCE 升级到 v5.5.67**：整合 NapCat Framework + QQ Chat Exporter
+- ✅ **补充 QCE 导出配置参考**：HTML 格式才能下载原图/原视频
+- ✅ **完善 .gitignore**：排除 QCE 二进制文件、临时脚本、提取的资产
+
+## 🧰 工具模块一览
+
+| 模块 | 功能 | 入口命令 |
+|------|------|---------|
+| **工作流扫描** | 扫描微信/QQ 缓存提取工作流 | `python comfyui_extractor.py` |
+| **统一 CLI** | 一个工具调用所有功能 | `python comfyui_tool.py --all` |
+| **桌面 GUI** | Windows 图形界面 | `comfyui_tool_gui.py` |
+| **Web 可视化** | 浏览器查看工作流 | `python web_visualizer.py` |
+| **SQLite 数据库** | 导入工作流数据查询 | `python database_manager.py` |
+| **模型下载** | 从 Civitai 自动下载模型 | `python model_downloader.py` |
+| **缺失检测** | 检测工作流中缺失的模型 | `python missing_model_detector.py` |
+| **报告导出** | 导出 HTML/CSV 综合报告 | `python export_reports.py` |
+| **QQ 聊天导出** | 导出 QQ 聊天记录（原图/原视频） | http://localhost:40653/qce-v4-tool |
+
 ## ✨ 功能特性
 
 ### 1. 智能特征识别（无视后缀名）
