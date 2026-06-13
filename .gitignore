@@ -26,3 +26,24 @@ gui_config.json
 
 # 临时脚本
 extract_workflow.py
+extract_qce.py
+extract_qce.ps1
+extract_qce.bat
+run_extract.bat
+run_qce_test.bat
+test_qce_conn.py
+generate_source_report.py
+scan_log.txt
+
+# QCE 相关（二进制文件不提交，从 releases 下载）
+qq-chat-exporter/
+qq-chat-exporter-old-*/
+NapCat-Framework-QCE-*.zip
+*.zip
+
+# 提取的资产文件
+Extracted_ComfyUI_Assets/
+Extracted_ComfyUI_Assets_*/
+
+# Claude 配置
+.claude/

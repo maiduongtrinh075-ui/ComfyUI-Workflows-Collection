@@ -370,7 +370,7 @@ Extracted_ComfyUI_Assets/
 QCE 工具需要单独下载安装：
 
 1. **下载 QCE Framework 包**
-   - 从 [QQ Chat Exporter Releases](https://github.com/shuakami/qq-chat-exporter/releases) 下载 `NapCat-Framework-QCE-vX.X.XX.zip`
+   - 从 [QQ Chat Exporter Releases](https://github.com/shuakami/qq-chat-exporter/releases) 下载最新版本（当前推荐 v5.5.67）
    - 或从 [NapCat 官方](https://napneko.github.io/) 获取最新版本
 
 2. **解压到项目目录**
@@ -400,8 +400,12 @@ python comfyui_tool.py --qce
 
 启动后：
 1. 等待 QQ 自动启动并登录
-2. 浏览器访问 `http://localhost:6099/qce-v4-tool`
-3. 在 Web UI 中导出聊天记录
+2. 浏览器访问 `http://localhost:6099`
+3. 输入 Token 登录（Token 在 `qq-chat-exporter/config/webui.json` 中）
+4. 在 Web UI 中找到 QCE 插件页面，选择会话并导出聊天记录
+   - 支持选择时间范围
+   - 支持原图模式、原视频模式
+   - 支持导出格式：JSON / HTML / Text / Excel
 
 ### 交互式导出
 
