@@ -16,14 +16,16 @@ from collections import defaultdict
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 目录配置
-BASE_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-JSON_DIR = BASE_DIR / "Workflows_JSON"
-MEDIA_JSON_DIR = BASE_DIR / "Workflows_JSON_From_Media"
-MEDIA_DIR = BASE_DIR / "Workflows_Media"
-MAPPING_FILE = BASE_DIR / "media_workflow_mapping.json"
-MODEL_CSV = BASE_DIR / "model_resources.csv"
-OUTPUT_DB = BASE_DIR / "comfyui_workflows.db"
+# 目录配置（统一从 paths 模块取）
+from paths import (
+    OUTPUT_DIR as BASE_DIR,
+    WORKFLOWS_JSON_DIR as JSON_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR as MEDIA_JSON_DIR,
+    WORKFLOWS_MEDIA_DIR as MEDIA_DIR,
+    MEDIA_WORKFLOW_MAPPING_FILE as MAPPING_FILE,
+    MODEL_RESOURCES_CSV as MODEL_CSV,
+    DB_FILE as OUTPUT_DB,
+)
 
 
 def init_database():

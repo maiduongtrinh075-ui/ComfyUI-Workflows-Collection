@@ -17,15 +17,17 @@ import threading
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 目录配置
-BASE_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-JSON_DIR = BASE_DIR / "Workflows_JSON"
-MEDIA_JSON_DIR = BASE_DIR / "Workflows_JSON_From_Media"
-MEDIA_DIR = BASE_DIR / "Workflows_Media"
-MAPPING_FILE = BASE_DIR / "media_workflow_mapping.json"
-MODEL_CSV = BASE_DIR / "model_resources.csv"
-STATS_HTML = BASE_DIR / "workflow_stats_report.html"
-MISSING_HTML = BASE_DIR / "missing_models_report.html"
+# 目录配置（统一从 paths 模块取）
+from paths import (  # noqa: E402
+    OUTPUT_DIR as BASE_DIR,
+    WORKFLOWS_JSON_DIR as JSON_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR as MEDIA_JSON_DIR,
+    WORKFLOWS_MEDIA_DIR as MEDIA_DIR,
+    MEDIA_WORKFLOW_MAPPING_FILE as MAPPING_FILE,
+    MODEL_RESOURCES_CSV as MODEL_CSV,
+    WORKFLOW_STATS_REPORT_HTML as STATS_HTML,
+    MISSING_MODELS_REPORT_HTML as MISSING_HTML,
+)
 
 # Web服务器配置
 PORT = 8080
@@ -291,7 +293,7 @@ class WebHandler(SimpleHTTPRequestHandler):
         # 显示前20个工作流
         for wf in workflows[:20]:
             html += f"""
-                <div class="workflow-item" onclick="showWorkflow('{wf['filename}')">
+                <div class="workflow-item" onclick="showWorkflow('{wf['filename']}')">
                     <div class="workflow-name">{wf['filename']}</div>
                     <div class="workflow-meta">节点数: {wf['node_count']} | 来源: {wf['source']}</div>
                 </div>

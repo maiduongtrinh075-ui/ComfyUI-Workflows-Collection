@@ -12,8 +12,7 @@ from collections import defaultdict
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-WORKFLOW_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON")
-OUTPUT_FILE = Path("F:/ComfyuiCatchJson/model_resources.csv")
+from paths import WORKFLOWS_JSON_DIR as WORKFLOW_DIR, MODEL_RESOURCES_CSV as OUTPUT_FILE  # noqa: E402
 
 # 模型加载节点类型映射
 MODEL_NODE_TYPES = {

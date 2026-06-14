@@ -13,27 +13,15 @@ from collections import defaultdict
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 目录配置
-JSON_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON")
-MEDIA_JSON_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON_From_Media")
-MODEL_RESOURCES_CSV = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/model_resources.csv")
-OUTPUT_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-
-# ComfyUI本地模型目录（用户需要修改为实际路径）
-LOCAL_MODEL_BASE = Path("F:/ComfyUI/models")
-
-# 模型类型对应的子目录映射
-MODEL_DIR_MAP = {
-    'checkpoint': 'checkpoints',
-    'lora': 'loras',
-    'vae': 'vae',
-    'clip': 'clip',
-    'controlnet': 'controlnet',
-    'upscale_model': 'upscale_models',
-    'unet': 'unet',
-    'embedding': 'embeddings',
-    'style_model': 'style_models',
-}
+# 目录配置（统一从 paths 模块取，支持 user_config.json / 环境变量覆盖）
+from paths import (  # noqa: E402
+    WORKFLOWS_JSON_DIR as JSON_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR as MEDIA_JSON_DIR,
+    MODEL_RESOURCES_CSV,
+    OUTPUT_DIR,
+    COMFYUI_MODELS_DIR as LOCAL_MODEL_BASE,
+    MODEL_DIR_MAP,
+)
 
 
 def load_workflow_models():

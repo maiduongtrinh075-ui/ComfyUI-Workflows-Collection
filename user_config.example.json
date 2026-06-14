@@ -1,0 +1,13 @@
+{
+  "_comment": "可选用户配置：复制本文件为 user_config.json 后按需修改。环境变量优先级最高。",
+  "output_dir": "F:/MyComfyData/Extracted_ComfyUI_Assets",
+  "comfyui_models_dir": "F:/ComfyUI/models",
+  "proxy": "http://127.0.0.1:7890",
+  "ffprobe_path": "ffprobe",
+  "scan_paths": [
+    "C:/Users/YourName/xwechat_files",
+    "C:/Users/YourName/Documents/Tencent Files",
+    "C:/Users/YourName/Documents/WeChat Files",
+    "C:/Users/YourName/Downloads"
+  ]
+}

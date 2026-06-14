@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from paths import PROJECT_ROOT
+
 def build_exe():
     """编译打包GUI为exe"""
     print("=" * 60)
@@ -27,8 +29,8 @@ def build_exe():
     # 打包命令
     print("\n[2] 开始打包...")
 
-    gui_script = Path("F:/ComfyuiCatchJson/comfyui_tool_gui.py")
-    output_dir = Path("F:/ComfyuiCatchJson/dist")
+    gui_script = PROJECT_ROOT / "comfyui_tool_gui.py"
+    output_dir = PROJECT_ROOT / "dist"
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
@@ -62,7 +64,7 @@ ComfyUI 工作流工具 使用说明
 1. 双击 ComfyUI工具.exe 启动程序
 2. 点击"添加微信路径"或"添加QQ路径"自动添加缓存目录
 3. 或点击"添加路径"手动选择扫描目录
-4. 设置输出目录（默认为 F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets）
+4. 设置输出目录（默认为项目目录下的 Extracted_ComfyUI_Assets）
 5. 点击"保存配置"
 
 使用方法：

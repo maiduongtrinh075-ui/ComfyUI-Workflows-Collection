@@ -16,8 +16,17 @@ import json
 from pathlib import Path
 import queue
 
-# 配置文件路径
-CONFIG_FILE = Path("F:/ComfyuiCatchJson/gui_config.json")
+from paths import (
+    PROJECT_ROOT,
+    OUTPUT_DIR as DEFAULT_OUTPUT_DIR,
+    COMFYUI_MODELS_DIR,
+    GUI_CONFIG_FILE,
+    GUI_ICON_FILE,
+    PROXY as DEFAULT_PROXY,
+)
+
+# 配置文件路径（统一从 paths 模块取，等价于项目根下 gui_config.json）
+CONFIG_FILE = GUI_CONFIG_FILE
 
 
 class ComfyUIToolGUI:
@@ -29,8 +38,8 @@ class ComfyUIToolGUI:
 
         # 配置数据
         self.scan_paths = []
-        self.output_dir = "F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets"
-        self.proxy = "http://127.0.0.1:7890"
+        self.output_dir = str(DEFAULT_OUTPUT_DIR)
+        self.proxy = DEFAULT_PROXY
 
         # 任务控制
         self.current_process = None
@@ -429,7 +438,7 @@ class ComfyUIToolGUI:
         self.set_running(True)
         self.progress_var.set(0)
 
-        script_path = Path("F:/ComfyuiCatchJson") / script_name
+        script_path = PROJECT_ROOT / script_name
 
         def run():
             try:
@@ -448,7 +457,7 @@ class ComfyUIToolGUI:
                 # 运行进程
                 self.current_process = subprocess.Popen(
                     cmd,
-                    cwd="F:/ComfyuiCatchJson",
+                    cwd=str(PROJECT_ROOT),
                     env=env,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -498,7 +507,7 @@ class ComfyUIToolGUI:
 
     def update_extractor_paths(self):
         """更新扫描脚本的路径配置"""
-        script_path = Path("F:/ComfyuiCatchJson/comfyui_extractor.py")
+        script_path = PROJECT_ROOT / "comfyui_extractor.py"
         if script_path.exists():
             content = script_path.read_text(encoding='utf-8')
             # 替换SCAN_PATHS配置
@@ -607,7 +616,7 @@ class ComfyUIToolGUI:
                         self.log(f"  ✓ 找到: {result['model_name']} ({result['file_size']/1024/1024:.1f}MB)", 'success')
 
                         # 设置下载目录
-                        comfyui_dir = Path("F:/ComfyUI/models")
+                        comfyui_dir = COMFYUI_MODELS_DIR
                         if comfyui_dir.exists():
                             target_dir = comfyui_dir / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
                         else:
@@ -672,7 +681,7 @@ class ComfyUIToolGUI:
 
                 # 扫描本地模型
                 self.log("\n[2] 扫描本地模型...", 'info')
-                comfyui_dir = Path("F:/ComfyUI/models")
+                comfyui_dir = COMFYUI_MODELS_DIR
                 local_models = scan_local_models(comfyui_dir) if comfyui_dir.exists() else {}
 
                 # 检查缺失
@@ -734,7 +743,7 @@ class ComfyUIToolGUI:
         self.log("启动Web服务器: http://localhost:8080", 'info')
 
         def run():
-            subprocess.run([sys.executable, "F:/ComfyuiCatchJson/web_visualizer.py"])
+            subprocess.run([sys.executable, str(PROJECT_ROOT / "web_visualizer.py")])
 
         threading.Thread(target=run, daemon=True).start()
 
@@ -769,7 +778,7 @@ class ComfyUIToolGUI:
                     self.log(f"\n[{i+1}/{len(scripts)}] {name}...", 'info')
                     self.progress_var.set((i / len(scripts)) * 100)
 
-                    script_path = Path("F:/ComfyuiCatchJson") / script
+                    script_path = PROJECT_ROOT / script
 
                     env = os.environ.copy()
                     env['OUTPUT_DIR'] = self.output_dir
@@ -777,7 +786,7 @@ class ComfyUIToolGUI:
 
                     self.current_process = subprocess.Popen(
                         [sys.executable, str(script_path)],
-                        cwd="F:/ComfyuiCatchJson",
+                        cwd=str(PROJECT_ROOT),
                         env=env,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
@@ -820,7 +829,7 @@ def main():
     app = ComfyUIToolGUI(root)
 
     # 设置图标（如果存在）
-    icon_path = Path("F:/ComfyuiCatchJson/icon.ico")
+    icon_path = GUI_ICON_FILE
     if icon_path.exists():
         root.iconbitmap(str(icon_path))
 

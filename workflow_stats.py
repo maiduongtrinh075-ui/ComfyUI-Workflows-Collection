@@ -14,10 +14,12 @@ from itertools import combinations
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 目录配置
-JSON_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON")
-MEDIA_JSON_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON_From_Media")
-OUTPUT_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
+# 目录配置（统一从 paths 模块取）
+from paths import (  # noqa: E402
+    WORKFLOWS_JSON_DIR as JSON_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR as MEDIA_JSON_DIR,
+    OUTPUT_DIR,
+)
 
 def load_workflows():
     """加载所有工作流"""

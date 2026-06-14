@@ -27,14 +27,9 @@ SAVE_INTERVAL = 500
 
 # ==================== 配置区域 ====================
 
-# 数据源路径清单
-SCAN_PATHS = [
-    r"C:\Users\Swioon\xwechat_files",
-    r"C:\Users\Swioon\Documents\Tencent Files",
-    r"C:\Users\Swioon\Documents\WeChat Files",
-    r"C:\Users\Swioon\Downloads",
-    r"F:\QQChatExport",
-]
+# 数据源路径清单：默认从 paths.SCAN_PATHS 读取（基于当前用户自动发现常见
+# 微信/QQ/Downloads 目录）。可通过 user_config.json 的 scan_paths 字段覆盖。
+from paths import SCAN_PATHS  # noqa: E402
 
 # 压缩包扩展名
 ARCHIVE_EXTENSIONS = {'.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz'}

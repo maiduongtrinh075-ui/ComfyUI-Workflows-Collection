@@ -14,21 +14,14 @@ from collections import defaultdict
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 配置
-COMFYUI_MODELS_DIR = Path("F:/ComfyUI/models")  # 用户需要修改为实际路径
-PROXY = "http://127.0.0.1:7890"
-
-# 模型目录映射
-MODEL_DIR_MAP = {
-    'checkpoint': 'checkpoints',
-    'lora': 'loras',
-    'vae': 'vae',
-    'clip': 'clip',
-    'controlnet': 'controlnet',
-    'upscale_model': 'upscale_models',
-    'unet': 'unet',
-    'embedding': 'embeddings',
-}
+# 配置（统一从 paths 模块取）
+from paths import (  # noqa: E402
+    COMFYUI_MODELS_DIR,
+    PROXY,
+    MODEL_DIR_MAP,
+    WORKFLOWS_JSON_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR,
+)
 
 
 def parse_workflow_models(workflow_path):
@@ -353,8 +346,8 @@ def main():
 
         # 列出可用的工作流
         json_dirs = [
-            Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON"),
-            Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON_From_Media"),
+            WORKFLOWS_JSON_DIR,
+            WORKFLOWS_JSON_FROM_MEDIA_DIR,
         ]
 
         workflows = []

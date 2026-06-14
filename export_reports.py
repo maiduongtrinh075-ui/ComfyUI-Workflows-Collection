@@ -13,9 +13,8 @@ from datetime import datetime
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 目录配置
-BASE_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-DB_PATH = BASE_DIR / "comfyui_workflows.db"
+# 目录配置（统一从 paths 模块取）
+from paths import OUTPUT_DIR as BASE_DIR, DB_FILE as DB_PATH  # noqa: E402
 OUTPUT_DIR = BASE_DIR
 
 

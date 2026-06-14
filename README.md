@@ -140,19 +140,54 @@ ZIP:     50 4B 03 04 (PK..)
 ======================================================================
 ```
 
-## ⚙️ 配置修改
+## ⚙️ 路径与配置
 
-编辑脚本开头的配置区域：
+所有脚本统一通过项目根目录下的 `paths.py` 读取配置，**不再硬编码绝对路径**。
+
+### 配置优先级
+
+环境变量 > `user_config.json` > 内置默认值。
+
+### 默认值
+
+| 配置项 | 默认值 | 说明 |
+|---|---|---|
+| `OUTPUT_DIR` | `<项目根>/Extracted_ComfyUI_Assets` | 所有提取产物目录 |
+| `COMFYUI_MODELS_DIR` | `<项目根>/../ComfyUI/models` | 本地 ComfyUI 模型根 |
+| `PROXY` | `http://127.0.0.1:7890` | Civitai 访问代理 |
+| `FFPROBE_PATH` | `ffprobe` | 默认走系统 PATH |
+| `SCAN_PATHS` | 基于 `%USERPROFILE%` 自动发现微信/QQ/Downloads | 扫描源目录列表 |
+
+### 使用 user_config.json
+
+将 `user_config.example.json` 复制为 `user_config.json` 并修改：
+
+```json
+{
+  "output_dir": "F:/MyComfyData/Extracted_ComfyUI_Assets",
+  "comfyui_models_dir": "F:/ComfyUI/models",
+  "proxy": "http://127.0.0.1:7890",
+  "scan_paths": [
+    "C:/Users/YourName/xwechat_files",
+    "C:/Users/YourName/Documents/WeChat Files"
+  ]
+}
+```
+
+### 使用环境变量（一次性覆盖）
+
+```powershell
+$env:OUTPUT_DIR = "D:/data/extracted"
+$env:COMFYUI_MODELS_DIR = "F:/ComfyUI/models"
+python comfyui_tool.py --all
+```
+
+### 修改最大解析文件大小
+
+仍在 `comfyui_extractor.py` 顶部：
 
 ```python
-# 修改扫描路径
-SCAN_PATHS = [
-    r"C:\Users\YourName\xwechat_files",
-    r"C:\Users\YourName\Documents\WeChat Files",
-]
-
-# 修改最大解析文件大小（默认100MB）
-MAX_FILE_SIZE_TO_PARSE = 100 * 1024 * 1024
+MAX_FILE_SIZE_TO_PARSE = 100 * 1024 * 1024  # 100MB
 ```
 
 ## 📝 使用场景
@@ -550,10 +585,11 @@ python missing_model_detector.py
 
 ### 配置本地模型目录
 
-编辑脚本中的 `LOCAL_MODEL_BASE` 为你的实际ComfyUI模型路径：
+编辑 `user_config.json`（复制 `user_config.example.json`）或设置环境变量
+`COMFYUI_MODELS_DIR`，将其指向你的 ComfyUI 模型目录：
 
-```python
-LOCAL_MODEL_BASE = Path("F:/ComfyUI/models")  # 修改为实际路径
+```json
+{ "comfyui_models_dir": "F:/ComfyUI/models" }
 ```
 
 ### 模型目录映射

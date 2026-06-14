@@ -16,13 +16,13 @@ from collections import defaultdict
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 路径配置
-MEDIA_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_Media")
-OUTPUT_JSON_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/Workflows_JSON_From_Media")
-MAPPING_FILE = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets/media_workflow_mapping.json")
-
-# FFprobe 路径
-FFPROBE_PATH = "C:/ffmpeg/ffmpeg-8.1.1-essentials_build/bin/ffprobe.exe"
+# 路径配置（统一从 paths 模块取）
+from paths import (
+    WORKFLOWS_MEDIA_DIR as MEDIA_DIR,
+    WORKFLOWS_JSON_FROM_MEDIA_DIR as OUTPUT_JSON_DIR,
+    MEDIA_WORKFLOW_MAPPING_FILE as MAPPING_FILE,
+    FFPROBE_PATH,
+)
 
 def compute_workflow_hash(workflow: dict) -> str:
     """计算工作流的SHA256哈希值，用于去重"""

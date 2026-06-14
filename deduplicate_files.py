@@ -17,8 +17,7 @@ from collections import defaultdict
 # 解决 Windows 控制台编码问题
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-OUTPUT_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-HISTORY_FILE = OUTPUT_DIR / "scanned_history.json"
+from paths import OUTPUT_DIR, HISTORY_FILE  # noqa: E402
 
 
 def calculate_file_hash(file_path: Path) -> str:

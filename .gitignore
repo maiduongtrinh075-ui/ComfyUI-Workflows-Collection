@@ -45,5 +45,9 @@ NapCat-Framework-QCE-*.zip
 Extracted_ComfyUI_Assets/
 Extracted_ComfyUI_Assets_*/
 
-# Claude 配置
+# Claude / CodeBuddy 配置
 .claude/
+.codebuddy/
+
+# 本地用户配置（包含个人路径，不提交；提交模板 user_config.example.json）
+user_config.json

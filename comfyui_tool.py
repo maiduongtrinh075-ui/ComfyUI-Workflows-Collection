@@ -9,7 +9,12 @@ import argparse
 import sys
 import os
 
+from paths import PROJECT_ROOT, OUTPUT_DIR as DEFAULT_OUTPUT_DIR
+
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+# subprocess 调用统一使用项目根作为工作目录
+_CWD = str(PROJECT_ROOT)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -43,7 +48,7 @@ def main():
     parser.add_argument('--qce', action='store_true', help='启动QCE (QQ聊天导出工具)')
     parser.add_argument('--qce-export', action='store_true', help='交互式导出QQ聊天记录')
     parser.add_argument('--proxy', type=str, default='http://127.0.0.1:7890', help='代理地址 (默认: 7890端口)')
-    parser.add_argument('--output', type=str, default='F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets', help='输出目录')
+    parser.add_argument('--output', type=str, default=str(DEFAULT_OUTPUT_DIR), help='输出目录')
 
     args = parser.parse_args()
 
@@ -108,7 +113,7 @@ def main():
 def run_scan():
     """执行工作流扫描"""
     import subprocess
-    result = subprocess.run([sys.executable, 'comfyui_extractor.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'comfyui_extractor.py'], cwd=_CWD)
     if result.returncode != 0:
         print("扫描失败，请检查 comfyui_extractor.py")
 
@@ -118,7 +123,7 @@ def run_models(proxy):
     import subprocess
     env = os.environ.copy()
     env['PROXY'] = proxy
-    result = subprocess.run([sys.executable, 'extract_model_resources.py'], cwd='F:/ComfyuiCatchJson', env=env)
+    result = subprocess.run([sys.executable, 'extract_model_resources.py'], cwd=_CWD, env=env)
     if result.returncode != 0:
         print("模型提取失败")
 
@@ -126,7 +131,7 @@ def run_models(proxy):
 def run_media():
     """提取媒体工作流"""
     import subprocess
-    result = subprocess.run([sys.executable, 'extract_media_workflows.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'extract_media_workflows.py'], cwd=_CWD)
     if result.returncode != 0:
         print("媒体工作流提取失败")
 
@@ -134,7 +139,7 @@ def run_media():
 def run_dedup():
     """执行去重"""
     import subprocess
-    result = subprocess.run([sys.executable, 'deduplicate_files.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'deduplicate_files.py'], cwd=_CWD)
     if result.returncode != 0:
         print("去重失败")
 
@@ -142,7 +147,7 @@ def run_dedup():
 def run_stats():
     """生成统计分析报告"""
     import subprocess
-    result = subprocess.run([sys.executable, 'workflow_stats.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'workflow_stats.py'], cwd=_CWD)
     if result.returncode != 0:
         print("统计分析失败")
 
@@ -150,7 +155,7 @@ def run_stats():
 def run_missing():
     """检测缺失模型"""
     import subprocess
-    result = subprocess.run([sys.executable, 'missing_model_detector.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'missing_model_detector.py'], cwd=_CWD)
     if result.returncode != 0:
         print("缺失模型检测失败")
 
@@ -161,13 +166,13 @@ def run_web():
     print("地址: http://localhost:8080")
     print("按 Ctrl+C 停止服务器")
     import subprocess
-    subprocess.run([sys.executable, 'web_visualizer.py'], cwd='F:/ComfyuiCatchJson')
+    subprocess.run([sys.executable, 'web_visualizer.py'], cwd=_CWD)
 
 
 def run_database():
     """导入数据库"""
     import subprocess
-    result = subprocess.run([sys.executable, 'database_manager.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'database_manager.py'], cwd=_CWD)
     if result.returncode != 0:
         print("数据库导入失败")
 
@@ -175,7 +180,7 @@ def run_database():
 def run_export():
     """导出报告"""
     import subprocess
-    result = subprocess.run([sys.executable, 'export_reports.py'], cwd='F:/ComfyuiCatchJson')
+    result = subprocess.run([sys.executable, 'export_reports.py'], cwd=_CWD)
     if result.returncode != 0:
         print("报告导出失败")
 
@@ -183,13 +188,13 @@ def run_export():
 def run_qce():
     """启动 QCE"""
     import subprocess
-    subprocess.run([sys.executable, 'start_qce.py'], cwd='F:/ComfyuiCatchJson')
+    subprocess.run([sys.executable, 'start_qce.py'], cwd=_CWD)
 
 
 def run_qce_export():
     """交互式导出 QQ 聊天记录"""
     import subprocess
-    subprocess.run([sys.executable, 'qce_api.py', '--export'], cwd='F:/ComfyuiCatchJson')
+    subprocess.run([sys.executable, 'qce_api.py', '--export'], cwd=_CWD)
 
 
 if __name__ == "__main__":

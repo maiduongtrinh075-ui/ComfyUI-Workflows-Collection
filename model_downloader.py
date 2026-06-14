@@ -16,25 +16,20 @@ from urllib.parse import quote
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# 配置
-OUTPUT_DIR = Path("F:/ComfyuiCatchJson/Extracted_ComfyUI_Assets")
-COMFYUI_MODELS_DIR = Path("F:/ComfyUI/models")  # 用户需要修改为实际路径
-PROXY = "http://127.0.0.1:7890"
+# 配置（统一从 paths 模块取）
+from paths import (  # noqa: E402
+    OUTPUT_DIR,
+    COMFYUI_MODELS_DIR,
+    PROXY,
+    MODEL_DIR_MAP,
+    PROJECT_ROOT,
+)
 
 # Civitai API
 CIVITAI_API_BASE = "https://civitai.com/api/v1"
 
-# 模型类型映射
-MODEL_DIR_MAP = {
-    'checkpoint': 'checkpoints',
-    'lora': 'loras',
-    'vae': 'vae',
-    'clip': 'clip',
-    'controlnet': 'controlnet',
-    'upscale_model': 'upscale_models',
-    'unet': 'unet',
-    'embedding': 'embeddings',
-}
+# 当 ComfyUI 模型目录不存在时使用的临时下载目录
+TEST_DOWNLOAD_DIR = PROJECT_ROOT / "test_download"
 
 
 def search_civitai_model(model_name, model_type, proxy=None):
@@ -235,7 +230,7 @@ def test_download_one_model():
             print("请修改脚本中的 COMFYUI_MODELS_DIR 为实际路径")
 
             # 使用临时目录测试
-            target_dir = Path("F:/ComfyuiCatchJson/test_download")
+            target_dir = TEST_DOWNLOAD_DIR
             target_dir.mkdir(exist_ok=True)
             print(f"使用临时目录: {target_dir}")
 
@@ -292,7 +287,7 @@ def batch_download_missing_models(max_count=5):
             # 创建目标目录
             target_dir = COMFYUI_MODELS_DIR / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
             if not COMFYUI_MODELS_DIR.exists():
-                target_dir = Path("F:/ComfyuiCatchJson/test_download") / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
+                target_dir = TEST_DOWNLOAD_DIR / MODEL_DIR_MAP.get(model['type'], 'checkpoints')
 
             target_dir.mkdir(parents=True, exist_ok=True)
             target_path = target_dir / result['file_name']
@@ -332,7 +327,7 @@ def main():
         if result:
             target_dir = COMFYUI_MODELS_DIR / MODEL_DIR_MAP.get(args.type, 'checkpoints')
             if not COMFYUI_MODELS_DIR.exists():
-                target_dir = Path("F:/ComfyuiCatchJson/test_download")
+                target_dir = TEST_DOWNLOAD_DIR
             target_dir.mkdir(parents=True, exist_ok=True)
             target_path = target_dir / result['file_name']
             download_model(result['download_url'], target_path, proxy, result['file_size'])
